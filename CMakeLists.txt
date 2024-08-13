@@ -31,10 +31,10 @@ add_executable(node src/drone_reg_node_class.cpp) # include/Quaternion_Solution.
 target_link_libraries(node euler_angles_lib::euler_angles)
 ament_target_dependencies(node  ${COLCON_VARS})
 
-install(
-    DIRECTORY include/${PROJECT_NAME}
-    DESTINATION include
-)
+# install(
+#     DIRECTORY include/${PROJECT_NAME}
+#     DESTINATION include
+# )
 
 install(
     TARGETS node
