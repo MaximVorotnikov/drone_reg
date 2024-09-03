@@ -37,6 +37,17 @@ public:
   DroneRegNode()
   : Node("drone_reg_node")
   {
+    std::string default_prefix = "/uav1";
+    this->declare_parameter("topic_prefix", default_prefix);
+    this->get_parameter_or("topic_prefix", topic_prefix, default_prefix);
+
+    std::string tmp_mavros_root = "/mavros";
+    std::string default_mavros_root = "/mavros";
+    this->declare_parameter("mavros_root", default_mavros_root);
+    this->get_parameter_or("mavros_root", tmp_mavros_root, default_mavros_root);
+
+    mavros_root = topic_prefix + tmp_mavros_root;
+
     drone_pose.course = 0;
     drone_pose.point.x = 0;
     drone_pose.point.y = 0;
@@ -47,8 +58,8 @@ public:
     goal.point.z = 0;
 
     local_pose_topic = mavros_root + local_pose_topic;
-    velFieldSub = this->create_subscription<geometry_msgs::msg::TwistStamped>("/field_vel", queue_size, std::bind(&DroneRegNode::vel_field_cb, this, std::placeholders::_1));
-    navVelSub = this->create_subscription<geometry_msgs::msg::TwistStamped>(mavros_root + "/local_position/velocity", rclcpp::QoS(rclcpp::KeepLast{10}).best_effort().durability_volatile(), std::bind(&DroneRegNode::nav_vel_cb, this, std::placeholders::_1));
+    velFieldSub = this->create_subscription<geometry_msgs::msg::TwistStamped>(topic_prefix + "/field_vel", queue_size, std::bind(&DroneRegNode::vel_field_cb, this, std::placeholders::_1));
+    navVelSub = this->create_subscription<geometry_msgs::msg::TwistStamped>(mavros_root + "/local_position/velocity", rclcpp::QoS(rclcpp::KeepLast{10}).best_effort(), std::bind(&DroneRegNode::nav_vel_cb, this, std::placeholders::_1));
 
     if (use_geo_mode == true)
         goalSub = this->create_subscription<drone_msgs::msg::Goal>(goal_global_topic, queue_size, std::bind(&DroneRegNode::goal_cb, this, std::placeholders::_1));
@@ -66,9 +77,9 @@ public:
 
     altSonarSub = this->create_subscription<std_msgs::msg::Float32>(alt_sonar_topic, queue_size, std::bind(&DroneRegNode::alt_sonar_cb, this, std::placeholders::_1));
 
-    vel_pub = this->create_publisher<geometry_msgs::msg::TwistStamped> (mavros_root + "/setpoint_velocity/cmd_vel", rclcpp::QoS(rclcpp::KeepLast{10}).best_effort().durability_volatile());
-    pub_marker = this->create_publisher<visualization_msgs::msg::Marker> ("/marker_reg_point", queue_size);
-    pub_vector_twist = this->create_publisher<sensor_msgs::msg::Imu> ("/reg_vector_twist", queue_size);
+    vel_pub = this->create_publisher<geometry_msgs::msg::TwistStamped> (mavros_root + "/setpoint_velocity/cmd_vel", rclcpp::QoS(rclcpp::KeepLast{10}).best_effort());
+    pub_marker = this->create_publisher<visualization_msgs::msg::Marker> (topic_prefix + "/marker_reg_point", queue_size);
+    pub_vector_twist = this->create_publisher<sensor_msgs::msg::Imu> (topic_prefix + "/reg_vector_twist", queue_size);
     
     // auto timer_callback =
     //   [this]() -> void {
@@ -165,7 +176,8 @@ private:
     mavros_msgs::msg::State drone_status;
 
     // std::string mavros_root = "/mavros";
-    std::string mavros_root = "/uav1/mavros";
+    std::string topic_prefix = "/uav1";
+    std::string mavros_root = "/mavros";
     std::string OFFBOARD = "OFFBOARD";
 
     // topics

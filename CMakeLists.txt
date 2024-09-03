@@ -22,6 +22,8 @@ find_package(drone_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
+
+
 set(COLCON_VARS euler_angles_lib rclcpp std_msgs tf2_ros geometry_msgs tf2_geometry_msgs mavros_msgs drone_msgs sensor_msgs visualization_msgs)
 
 include_directories(include)
